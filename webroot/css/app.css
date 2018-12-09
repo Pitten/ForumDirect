@@ -2,6 +2,10 @@ body {
   background-color: #212528;
 }
 
+.logo a {
+  word-break: unset;
+}
+
 @media (min-width: 768px) {
   .order-md-first {
     -ms-flex-order: -1;
@@ -12,11 +16,10 @@ body {
     -ms-flex-order: 13;
     order: 13;
   }
-
 }
 
 hr {
-    border-top: 1px solid #cccccc;
+    border-top: 1px solid #777;
 }
 
 hr:nth-last-child(1) { display:none; }
@@ -31,13 +34,23 @@ hr:nth-last-child(1) { display:none; }
 }
 
 a {
-    color: #cccccc;
-    text-decoration: none;
+    color: #ffffff;
+    text-decoration: unset !important;
+    word-break: break-all;
 }
 
 a:hover {
   color: unset !important;
-  text-decoration: none;
+  text-decoration: unset !important;
+}
+
+a:focus{
+  color:#ffffff;
+  text-decoration: unset !important;
+}
+
+.alert a {
+  color: #333;
 }
 
 .heading1 {
@@ -68,6 +81,19 @@ a:hover {
   background-image: linear-gradient(to top, #1a1b1f, #212528);
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3), inset 0 1px 1px rgba(255, 255, 255, 0.2);
   color: white;
+}
+
+#chatbox {
+  height: 200px; 
+  overflow: auto; 
+  padding: 1em;
+}
+
+.chat {
+  max-width: 700px; 
+  max-height: 150px; 
+  word-break: break-all; 
+  overflow:hidden;
 }
 
 .badge {
@@ -146,7 +172,7 @@ img.emojione {
 
 .list-group-item.active {
     background-color: #1d1d1d;
-    border-color: #1d1d1d;
+    border: 1px solid #000;
 }
 
 .list-group a {
@@ -265,5 +291,9 @@ h3 {
 
   .topic-small .forum-views {
     display:none;
+  }
+
+  #chatbox {
+    padding: .2em;
   }
 }

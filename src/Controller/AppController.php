@@ -64,21 +64,6 @@ class AppController extends Controller
 
         $this->loadComponent('Security');
 
-        $this->loadModel('Threads');
-
-        $forums = TableRegistry::get('forums');
-
-        $query = $forums->find('all');
-        $query
-            ->contain(['sub_forums']);
-        $this->set('query', $query);
-
-        $recent_activity = $this->Threads->find('all');
-        $recent_activity
-            ->order(['last_post_date'  => 'DESC'])
-            ->limit(10);
-        $this->set('recent_activity', $recent_activity);
-
         /*
          * Enable the following component for recommended CakePHP security settings.
          * see https://book.cakephp.org/3.0/en/controllers/components/security.html
@@ -90,6 +75,28 @@ class AppController extends Controller
     {
         parent::beforeFilter($event);
         $this->Auth->allow(['index', 'display']);
+
+        $forums = TableRegistry::get('forums');
+        $chats_table = TableRegistry::get('chats');
+        $groups = TableRegistry::get('roles');
+
+        $query = $forums->find('all');
+        $query
+            ->contain(['sub_forums']);
+        $this->set('query', $query);
+
+        $this->loadModel('Threads');
+        $recent_activity = $this->Threads->find('all');
+        $recent_activity
+            ->order(['last_post_date'  => 'DESC'])
+            ->limit(10);
+        $this->set('recent_activity', $recent_activity);
+
+        $chats = $chats_table->find('all');
+        $this->set('chats', $chats);
+
+        $roles = $groups->find('all');
+        $this->set('roles_home', $roles);
 
         $user = $this->request->getSession()->read('Auth.User');
         $this->set('user', $user);

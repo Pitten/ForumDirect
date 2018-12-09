@@ -84,6 +84,7 @@ class UsersController extends AppController
     {
         if ($this->request->is('post')) {
             $user = $this->Auth->identify();
+
             if ($user) {
 
                 // $_roles = [];
@@ -99,6 +100,12 @@ class UsersController extends AppController
                 // }
 
                 //  $user['roles'] = $_roles;
+
+                $query = $this->Users->query()
+                    ->where(['id' => $user['id']]);
+
+                $ip = $this->request->clientIp();
+                $query->update()->set(['ip' => $ip])->execute();
 
                 $this->Auth->setUser($user);
                 return $this->redirect($this->Auth->redirectUrl());

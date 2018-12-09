@@ -59,6 +59,10 @@ Router::scope('/', function (RouteBuilder $routes) {
      */
     $routes->connect('/pages/*', ['controller' => 'Pages', 'action' => 'display']);
 
+    $routes->connect('/thread/:id-:slug', ['controller' => 'Threads', 'action' => 'view'], ['pass' => ['slug', 'id'], 'id' => '[0-9]+']);
+
+    $routes->connect('/thread/*', ['controller' => 'Threads', 'action' => 'view'], ['routeClass' => 'DashedRoute']);
+
     /**
      * Connect catchall routes for all controllers.
      *

@@ -1,4 +1,6 @@
-<?php require './ForumDirectParsedown.php'; ?>
+<?php use Cake\App\App;
+  require_once(ROOT . '/webroot' . DS  . '/ForumDirectParsedown.php');
+?>
 <?php echo $this->Flash->render(); ?>  
 
 <nav aria-label="Page navigation">
@@ -40,7 +42,7 @@
             </div>
           </div>
           <div class="col-md-10">
-            <small class="text-muted"><?= $this->Time->timeAgoInWords($thread->created); ?> <?php if($thread->modified): ?><i>modified: <?= $this->Time->timeAgoInWords($thread->modified); ?></i><?php endif; ?> <div class="float-right"><?php if($this->request->getSession()->read('Auth.User')): ?><a href="../../threads/quote/<?= $thread->id ?>">quote</a><?php endif; ?> <?php if(!$thread->closed && $thread->author_id == $this->request->getSession()->read('Auth.User.id') && $thread->author_id == $this->request->getSession()->read('Auth.User.id')): ?><a href="../edit/<?= $thread->id ?>">edit</a><?php endif; ?></div></small>
+            <small class="text-muted"><?= $this->Time->timeAgoInWords($thread->created); ?> <?php if($thread->modified): ?><i>modified: <?= $this->Time->timeAgoInWords($thread->modified); ?></i><?php endif; ?> <div class="float-right"><?php if($this->request->getSession()->read('Auth.User')): ?><a href="../../threads/quote/<?= $thread->id ?>">quote</a><?php endif; ?> <?php if(!$thread->closed && $thread->author_id == $this->request->getSession()->read('Auth.User.id')): ?><a href="../../threads/edit/<?= $thread->id ?>">edit</a><?php elseif($this->request->getSession()->read('Auth.User.role') == 2 || $this->request->getSession()->read('Auth.User.role') == 3): ?><a href="../edit/<?= $thread->id ?>">edit</a><?php endif; ?><?php if($this->request->getSession()->read('Auth.User.role') == 2 || $this->request->getSession()->read('Auth.User.role') == 3): ?> <?php if(!$thread->closed): ?><a href="../threads/close/<?= $thread->id ?>" onclick="return confirm('Are you sure?')">close</a><?php else: ?> <a href="../threads/open/<?= $thread->id ?>" onclick="return confirm('Are you sure?')">open</a> <?php endif; ?><?php endif; ?></div></small>
             <?php 
               $parsedown = new ForumDirectParsedown();
               $source = $parsedown->setMarkupEscaped(true);
@@ -68,8 +70,8 @@
               </p>
             </div>
           </div>
-          <div class="col-md-10">
-            <small class="text-muted"><?= $this->Time->timeAgoInWords($row->created); ?> <?php if($row->modified): ?><i>modified: <?= $this->Time->timeAgoInWords($row->modified); ?></i><?php endif; ?> <div class="float-right"><?php if($this->request->getSession()->read('Auth.User')): ?><a href="../../posts/quote/<?= $row->id ?>">quote</a><?php endif; ?> <?php if(!$thread->closed && $row->author_id == $this->request->getSession()->read('Auth.User.id')): ?><a href="../../posts/edit/<?= $row->id ?>">edit</a><?php endif; ?></div></small>
+          <div class="col-md-10" id="pid<?= $row->id; ?>">
+            <small class="text-muted"><?= $this->Time->timeAgoInWords($row->created); ?> <?php if($row->modified): ?><i>modified: <?= $this->Time->timeAgoInWords($row->modified); ?></i><?php endif; ?> <div class="float-right"><?php if($this->request->getSession()->read('Auth.User')): ?><a href="../../posts/quote/<?= $row->id ?>">quote</a><?php endif; ?> <?php if(!$thread->closed && $row->author_id == $this->request->getSession()->read('Auth.User.id')): ?><a href="../../posts/edit/<?= $row->id ?>">edit</a><?php elseif($this->request->getSession()->read('Auth.User.role') == 2 || $this->request->getSession()->read('Auth.User.role') == 3): ?><a href="../posts/edit/<?= $row->id ?>">edit</a><?php endif; ?></div></small>
             <?php 
               $parsedown = new ForumDirectParsedown();
               $source = $parsedown->setMarkupEscaped(true);
@@ -82,7 +84,6 @@
         <?php endforeach; ?>
 
         <?php else: ?>
-        <!-- if user is on page 2 !-->
 
         <div class="row">
         <div class="col-md-12">
@@ -108,8 +109,8 @@
               </p>
             </div>
           </div>
-          <div class="col-md-10">
-            <small class="text-muted"><?= $this->Time->timeAgoInWords($row->created); ?> <?php if($row->modified): ?><i>modified: <?= $this->Time->timeAgoInWords($row->modified); ?></i><?php endif; ?> <div class="float-right"><?php if($this->request->getSession()->read('Auth.User')): ?><a href="../../posts/quote/<?= $row->id ?>">quote</a><?php endif; ?> <?php if(!$thread->closed && $row->author_id == $this->request->getSession()->read('Auth.User.id')): ?><a href="../../posts/edit/<?= $row->id ?>">edit</a><?php endif; ?></div></small>
+          <div class="col-md-10" id="pid<?= $row->id; ?>">
+            <small class="text-muted"><?= $this->Time->timeAgoInWords($row->created); ?> <?php if($row->modified): ?><i>modified: <?= $this->Time->timeAgoInWords($row->modified); ?></i><?php endif; ?> <div class="float-right"><?php if($this->request->getSession()->read('Auth.User')): ?><a href="../../posts/quote/<?= $row->id ?>">quote</a><?php endif; ?> <?php if(!$thread->closed && $row->author_id == $this->request->getSession()->read('Auth.User.id')): ?><a href="../../posts/edit/<?= $row->id ?>">edit</a><?php elseif($this->request->getSession()->read('Auth.User.role') == 2 || $this->request->getSession()->read('Auth.User.role') == 3): ?><a href="../posts/edit/<?= $row->id ?>">edit</a><?php endif; ?></div></small>
             <?php 
               $parsedown = new ForumDirectParsedown();
               $source = $parsedown->setMarkupEscaped(true);
@@ -124,7 +125,7 @@
         <?php endif; ?>
 
         <?php if (isset($user) && !$thread->closed): ?>
-        <!-- <br> // replies !-->
+
         <div class="heading">
             <h3 class="bevelled">Quick reply</h3>
         </div>
@@ -141,7 +142,7 @@
     	</div>
         <?php endif; ?>
         <?php if($thread->closed): ?>
-        <div class="alert alert-danger">This thread is closed.</div>
+        <div class="alert alert-danger">This topic is closed.</div>
         <?php endif; ?>
     </div>
 </div>

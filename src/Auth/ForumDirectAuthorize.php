@@ -117,7 +117,7 @@ class ForumDirectAuthorize extends BaseAuthorize
 
     }
 
-    /* Another solution: get role by login and then delete the session of a user if role has changed */
+    /* Another solution: get role by login and then delete the session of a user if role has been changed */
 
     protected function userHasRole($role) {
 

@@ -23,7 +23,7 @@ class SubForumsController extends AppController
       $exists = $subforums->exists(['id' => $id]);
 
       if(!$exists){
-        $this->Flash->error(__("Sub Forum doesn't exist."));
+        $this->Flash->error(__("Subforum doesn't exist."));
         return $this->redirect(['action' => '../']);
       }
 

@@ -1,9 +1,12 @@
 <?php
 namespace App\Controller;
 
+use Cake\Network\Exception\NotFoundException;
+use Cake\Utility\Inflector;
+
 class ThreadsController extends AppController
 {
-	public $paginate = ['limit' => 4];
+	public $paginate = ['limit' => 7];
 
 	public function initialize()
     {
@@ -21,14 +24,39 @@ class ThreadsController extends AppController
         	$this->Auth->allow(['view']);
     }
 
-    public function view($id = null)
+    public function view($slug = null, $id = null)
     {
-        $thread = $this->Threads->get($id);
+        $thread = $this->Threads->findBySlug($slug)->first();
+        if($id != null) $thread = $this->Threads->query()->where(['id' => $id, 'slug' => $slug])->first();
         $this->set(compact('thread'));
 
-        $query = $this->Posts->find()->where(['thread_id' => $id]);
+        if(is_null($thread)) throw new NotFoundException();
+
+        $tid = $thread->id;
+
+        $query = $this->Posts->find()->where(['thread_id' => $thread->id]);
         $this->set('posts', $this->paginate($query));
         $this->set('page', $this->request->getQuery('page'));
+
+        if($this->request->query('action') == 'lastpost'){
+            $totalPages = $this->request->param('paging')['Posts']['pageCount'];
+
+            $action = $this->request->here;
+
+            $query =  $this->Posts->query()->where(['thread_id' => $tid])->order(['id' => 'DESC'])->first();
+
+            if(is_null($query)){
+                return $this->redirect(['action' => '../'.$action.'']);
+            }else{      
+                $lastpost_id = $query->id;
+            }
+
+            if($totalPages == 1){
+                return $this->redirect(['action' => '../'.$action.'/#pid'.$lastpost_id.'']);
+            }
+
+            return $this->redirect(['action' => '../'.$action.'?page='.$totalPages.'#pid'.$lastpost_id.'']);
+        }
     }
 
     public function add($id = null)
@@ -48,8 +76,8 @@ class ThreadsController extends AppController
         endif;
 
         if ($this->request->is('post')) {
-            // Prior to 3.4.0 $this->request->data() was used.
             $thread = $this->Threads->patchEntity($thread, $this->request->getData());
+            $thread['slug'] = Inflector::slug($this->request->getData('title'));
             $thread['author_id'] = $this->request->getSession()->read('Auth.User.id');
             $thread['last_post_uid'] = $this->request->getSession()->read('Auth.User.id');
             $thread['sub_forum_id'] = $id;
@@ -97,7 +125,7 @@ class ThreadsController extends AppController
     public function edit($id = null) {
         $username = $this->Auth->user('username');
         $user_id = $this->Auth->user('id');
-        $user_role = $this->Auth->user('primary_role');
+        $user_role = $this->Auth->user('role');
         $thread = $this->Threads->get($id);
 
         if($thread->closed):
@@ -105,9 +133,12 @@ class ThreadsController extends AppController
             return $this->redirect('/');
         endif;
 
-        if($user_id !== $thread['author_id'] && $user_role !== 1){
-            $this->Flash->error(__('You are not authorized to access that location.'));
-            return $this->redirect('/');
+        if($user_id == $thread['author_id'] and $user_role == 1){
+        }else{
+            if($user_role !== 2 && $user_role !== 3){
+                $this->Flash->error(__('You are not authorized to access that location.'));
+                return $this->redirect('/');
+            }
         }
 
         if ($this->request->is(['post', 'put'])) {
@@ -123,6 +154,38 @@ class ThreadsController extends AppController
         $this->set('edit', $thread);
     }
 
+    public function open($id = null) {
+        $user_role = $this->Auth->user('role');
+        $query = $this->Threads->query()
+                ->where(['id' => $id]);
+
+        if($user_role !== 2 && $user_role !== 3){
+            $this->Flash->error(__('You are not authorized to access that location.'));
+            return $this->redirect('/');
+        }
+
+        if($query->update()->set(['closed' => 0])->execute()){
+            $this->Flash->success(__('The given thread has been opened.'));
+            return $this->redirect('/');
+        }
+    }
+
+    public function close($id = null) {
+        $user_role = $this->Auth->user('role');
+        $query = $this->Threads->query()
+                ->where(['id' => $id]);
+
+        if($user_role !== 2 && $user_role !== 3){
+            $this->Flash->error(__('You are not authorized to access that location.'));
+            return $this->redirect('/');
+        }
+
+        if($query->update()->set(['closed' => 1])->execute()){
+            $this->Flash->success(__('The given thread has been closed.'));
+            return $this->redirect('/');
+        }
+    }
+
     public function post($id = null)
     {
         $post = $this->Posts->newEntity();
@@ -132,6 +195,8 @@ class ThreadsController extends AppController
         $query = $this->Threads->query()
                 ->where(['id' => $id]);
 
+        $slug = $query->first()->slug;
+
         if($query->first()->closed):
         	$this->Flash->error(__('You are not authorized to access that location.'));
         	
@@ -139,14 +204,13 @@ class ThreadsController extends AppController
         endif;
 
         if ($this->request->is('post')) {
-            // Prior to 3.4.0 $this->request->data() was used.
             $post = $this->Posts->patchEntity($post, $this->request->getData());
             $post['author_id'] = $this->request->getSession()->read('Auth.User.id');
             $post['thread_id'] = $id;
             if ($this->Posts->save($post)) {
             	$query->update()->set(['last_post_date' => date("Y-m-d H:i:s"), 'last_post_uid' => $this->request->getSession()->read('Auth.User.id')])->execute();
                 $this->Flash->success(__('Your post has been saved.'));
-                return $this->redirect(['action' => '../threads/view/'.$id.'']);
+                return $this->redirect(['action' => '../thread/'.$id . $slug.'']);
             }
             $this->Flash->error(__('Unable to add your post.'));
         }

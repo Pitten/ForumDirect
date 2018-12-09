@@ -26,13 +26,21 @@ class ForumCell extends Cell
 
     public function get_latest_thread($sid){
         $threads = TableRegistry::get('threads');
+        $posts = TableRegistry::get('posts');
+
         $query = $threads->find()
-            ->select(['id', 'title', 'last_post_uid', 'last_post_date'])
+            ->select(['id', 'title', 'slug', 'last_post_uid', 'last_post_date'])
             ->where(['sub_forum_id' => $sid])
             ->order(['last_post_date' => 'DESC'])
             ->limit(1);
 
         $this->set(compact('query'));
+
+        if(!$query->isEmpty()){
+            $posts_query = $posts->query()
+            ->where(['thread_id' => $query->first()->id])->toArray();
+            $this->set(compact('posts_query'));
+        }
     }
 
     public function getRole($id){
@@ -77,6 +85,17 @@ class ForumCell extends Cell
         $query = $users->find('all');
         $query
         ->where(['id'  => $id]);
+
+        $this->set(compact('query')); 
+    }
+
+     public function checkDuplicateSlugs($slug, $tid){
+        $threads = TableRegistry::get('threads');
+        $query = $threads->find('all');
+        $query
+        ->where(['slug'  => $slug]);
+
+        $this->set('tid', $tid);
 
         $this->set(compact('query')); 
     }

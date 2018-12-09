@@ -27,9 +27,12 @@ class PostsController extends AppController
             return $this->redirect('/');
         endif;
 
-        if($user_id !== $post['author_id'] && $user_role != 1){
-            $this->Flash->error(__('You are not authorized to access that location.'));
-            return $this->redirect('/');
+        if($user_id == $post['author_id'] and $user_role == 1){
+        }else{
+            if($user_role !== 2 && $user_role !== 3){
+                $this->Flash->error(__('You are not authorized to access that location.'));
+                return $this->redirect('/');
+            }
         }
 
         if ($this->request->is(['post', 'put'])) {
